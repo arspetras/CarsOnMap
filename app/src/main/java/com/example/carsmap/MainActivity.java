@@ -2,6 +2,7 @@ package com.example.carsmap;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.nfc.Tag;
@@ -14,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -34,6 +36,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Boolean permissionGranted = false;
     private static float ZOOM = 15f;
+    private Boolean focusOnUser = false;
+
+
+    public String[] plateNumber;
+    public String[] latitude;
+    public String[] longitude;
+    public String[] address;
+    public String[] title;
+    public String[] photoUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +52,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_main);
 
         checkForContactsPermissions();
+
+        plateNumber = getIntent().getStringArrayExtra("1");
+        latitude = getIntent().getStringArrayExtra("2");
+        longitude = getIntent().getStringArrayExtra("3");
+        address = getIntent().getStringArrayExtra("4");
+        title = getIntent().getStringArrayExtra("5");
+        photoUrl = getIntent().getStringArrayExtra("6");
     }
+
 
     private void StartMap() {
         Log.d(TAG, "StartMap: was called");
@@ -70,6 +89,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
+        showMyCar();
 
     }
 
@@ -93,7 +113,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                             double lat = currentLocation.getLatitude();
                             double lon = currentLocation.getLongitude();
                             LatLng ll = new LatLng(lat,lon);
-                            moveCameraView(ll,ZOOM);
+                            if(focusOnUser) moveCameraView(ll,ZOOM);
                         }
                         else
                         {
@@ -121,6 +141,30 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
     }
+
+    /**
+        Method to show list of cars
+     */
+    public void showCarsList(View view)
+    {
+        Intent intent = new Intent(this, Cars.class);
+        startActivity(intent);
+    }
+
+    //test
+    public void showMyCar()
+    {
+        LatLng ll = new LatLng(Double.parseDouble(latitude[0]),Double.parseDouble(longitude[0]));
+        moveCameraView(ll,20f);
+    }
+    // Next Write a method that would put pointers on needed locations
+
+
+
+
+
+
+
 
 
     /**

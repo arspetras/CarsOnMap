@@ -1,11 +1,21 @@
 package com.example.carsmap;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.maps.android.clustering.ClusterManager;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +37,22 @@ public class Cars extends AppCompatActivity {
     public String[] address;
     public String[] title;
     public String[] photoUrl;
+    int i=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cars);
         GetAllFormCarsApi ();
+
+
+        // Image link from internet
+
+        new DownloadImageFromInternet((ImageView) findViewById(R.id.image_view))
+                .execute("https://s3-eu-west-1.amazonaws.com/rideshareuploads/uploads/f403e69d-13ea-4e7f-aa09-f68e2a91f540.jpeg");
+
+
+
     }
 
     public void GetAllFormCarsApi ()
@@ -65,7 +85,7 @@ public class Cars extends AppCompatActivity {
                 }
 
                 List<Post> posts = response.body();
-                int i=0;
+
                 for(Post post: posts)
                 {
                     String content = "";
@@ -101,6 +121,7 @@ public class Cars extends AppCompatActivity {
 
     public void back(View view)
     {
+        String length = String.valueOf(i);
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("1", plateNumber);
         intent.putExtra("2", latitude);
@@ -108,6 +129,7 @@ public class Cars extends AppCompatActivity {
         intent.putExtra("4", address);
         intent.putExtra("5", title);
         intent.putExtra("6", photoUrl);
+        intent.putExtra("7", length);
         startActivity(intent);
     }
 

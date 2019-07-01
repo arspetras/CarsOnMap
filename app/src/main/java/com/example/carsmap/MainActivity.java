@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.nfc.Tag;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,6 +30,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.maps.android.clustering.ClusterManager;
+
+import java.util.ArrayList;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -36,15 +41,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Boolean permissionGranted = false;
     private static float ZOOM = 15f;
-    private Boolean focusOnUser = false;
+    private Boolean focusOnUser = true;
 
-
+    String listLength;
     public String[] plateNumber;
     public String[] latitude;
     public String[] longitude;
     public String[] address;
     public String[] title;
     public String[] photoUrl;
+
+    private ClusterManager mClusterManager;
+    private ClusterRenderer mClusterRenderer;
+    private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +68,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         address = getIntent().getStringArrayExtra("4");
         title = getIntent().getStringArrayExtra("5");
         photoUrl = getIntent().getStringArrayExtra("6");
+        listLength = getIntent().getStringExtra("7");
+
     }
 
 
@@ -89,7 +100,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
-        showMyCar();
+        addCarMarkers();
 
     }
 
@@ -157,7 +168,40 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng ll = new LatLng(Double.parseDouble(latitude[0]),Double.parseDouble(longitude[0]));
         moveCameraView(ll,20f);
     }
-    // Next Write a method that would put pointers on needed locations
+
+    private void addCarMarkers()
+    {
+        try {
+            if (mMap != null) {
+                if (mClusterManager == null) {
+                    mClusterManager = new ClusterManager<ClusterMarker>(this.getApplicationContext(), mMap);
+                }
+                if (mClusterRenderer == null) {
+                    mClusterRenderer = new ClusterRenderer(this, mMap, mClusterManager);
+                    mClusterManager.setRenderer(mClusterRenderer);
+                }
+                for (int x = 0; x < Integer.parseInt(listLength) ; x++) {
+                    String snippet = "Plate Number: " + plateNumber[x];
+
+                    int avatar = R.drawable.img;
+
+                    ClusterMarker newClusterMarker = new ClusterMarker(
+                            new LatLng(Double.parseDouble(latitude[x]), Double.parseDouble(longitude[x])),
+                            title[x],
+                            snippet,
+                            avatar
+                    );
+
+                    mClusterManager.addItem(newClusterMarker);
+                    mClusterMarkers.add(newClusterMarker);
+                }
+                mClusterManager.cluster();
+
+            }
+        }catch (NullPointerException e){
+            Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
+        }
+    }
 
 
 

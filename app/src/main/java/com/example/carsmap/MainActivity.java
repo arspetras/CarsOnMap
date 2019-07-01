@@ -50,10 +50,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public String[] address;
     public String[] title;
     public String[] photoUrl;
-
+    public String[] distanceToUser;
     private ClusterManager mClusterManager;
     private ClusterRenderer mClusterRenderer;
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
+    public double lat;
+    public double lon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         title = getIntent().getStringArrayExtra("5");
         photoUrl = getIntent().getStringArrayExtra("6");
         listLength = getIntent().getStringExtra("7");
+
+        distanceToUser = new String[100];
 
     }
 
@@ -101,6 +105,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mMap.setMyLocationEnabled(true);
         addCarMarkers();
+        // calculate distance to user
+        for(int x = 0;x< Integer.parseInt(listLength);x++) {
+            distanceToUser[x] = String.valueOf(GetDistance(lat, lon, Double.parseDouble(latitude[x]), Double.parseDouble(longitude[x])));
+        }
 
     }
 
@@ -121,8 +129,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                         {
                             Log.d(TAG,"onComplete: found");
                             Location currentLocation = (Location) task.getResult();
-                            double lat = currentLocation.getLatitude();
-                            double lon = currentLocation.getLongitude();
+                            lat = currentLocation.getLatitude();
+                            lon = currentLocation.getLongitude();
                             LatLng ll = new LatLng(lat,lon);
                             if(focusOnUser) moveCameraView(ll,ZOOM);
                         }
@@ -140,6 +148,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             Log.e(TAG, "GetCurrentLocation: Security Exception: " + e.getMessage());
         }
     }
+
 
     /**
         Method to move map to certain point (move camera)
@@ -159,6 +168,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void showCarsList(View view)
     {
         Intent intent = new Intent(this, Cars.class);
+        intent.putExtra("distanceToUser", distanceToUser);
         startActivity(intent);
     }
 
@@ -194,6 +204,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
                     mClusterManager.addItem(newClusterMarker);
                     mClusterMarkers.add(newClusterMarker);
+
                 }
                 mClusterManager.cluster();
 
@@ -204,7 +215,26 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-
+    /**
+     Method to calculate distance between car and user
+     Using Haversine method
+     */
+    private static double GetDistance(double lat1, double lon1, double lat2, double lon2) {
+        if ((lat1 == lat2) && (lon1 == lon2)) {
+            return 0;
+        }
+        else {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+            dist = Math.acos(dist);
+            dist = Math.toDegrees(dist);
+            dist = dist * 60 * 1.1515;
+            dist = dist * 1.609344;
+            dist = Math.ceil(dist);
+            dist = dist /1000;
+            return (dist);
+        }
+    }
 
 
 

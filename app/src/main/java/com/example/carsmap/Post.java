@@ -21,6 +21,7 @@ public class Post {
     private String isCharging;
 
 
+
     public String getId() {
         return id;
     }

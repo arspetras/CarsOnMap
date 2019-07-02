@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.service.quicksettings.Tile;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,6 +48,8 @@ public class Cars extends AppCompatActivity {
     public String[] title;
     public String[] photoUrl;
     public String[] batteryLife;
+    public String[] batteryDistance;
+    public String[] isBatteryCharging;
     int i=0;
     public String[] distanceToUser;
     public String buttonId = "-1";
@@ -134,8 +137,18 @@ public class Cars extends AppCompatActivity {
         carDistance.setTextColor(Color.BLACK);
         carDistance.setTextSize(20);
 
-        Button moreInfoButton = new Button(this);
+        final Button moreInfoButton = new Button(this);
         moreInfoButton.setText("More Info");
+        moreInfoButton.setId(i);
+        moreInfoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonId = String.valueOf(moreInfoButton.getId());
+                showAllInfo();
+            }
+        });
+
+
 
         TextView forSpacing = new TextView(this);
         forSpacing.setText(" ");
@@ -178,6 +191,8 @@ public class Cars extends AppCompatActivity {
         title = new String[100];
         photoUrl = new String[100];
         batteryLife = new String[100];
+        batteryDistance = new String[100];
+        isBatteryCharging = new String[100];
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://development.espark.lt/")
@@ -209,6 +224,8 @@ public class Cars extends AppCompatActivity {
                     title[i] = post.getModel().get("title");
                     photoUrl[i] = post.getModel().get("photoUrl");
                     batteryLife[i] = post.getBatteryPercentage();
+                    batteryDistance[i] = post.getBatteryEstimatedDistance();
+                    isBatteryCharging[i] = post.isCharging();
                     if(distanceToUser == null) addToList(photoUrl[i],title[i],plateNumber[i],batteryLife[i], "~");
                     else addToList(photoUrl[i],title[i],plateNumber[i],batteryLife[i],distanceToUser[i]);
                     i++;
@@ -221,6 +238,32 @@ public class Cars extends AppCompatActivity {
                 myText.setText(t.getMessage());
             }
         });
+    }
+
+    /**
+        Method to show message dialog with full information about the car
+     */
+    public void showAllInfo()
+    {
+        StringBuffer buffer = new StringBuffer();
+
+            buffer.append("Plate Number: " + plateNumber[Integer.parseInt(buttonId)] + "\n");
+            buffer.append("Model: " + title[Integer.parseInt(buttonId)] + "\n");
+            buffer.append("Location: "+ address[Integer.parseInt(buttonId)] + "\n");
+            buffer.append("Battery Percentage: "+ batteryLife[Integer.parseInt(buttonId)] + "\n");
+            buffer.append("Battery Estimated Distance: " + batteryDistance[Integer.parseInt(buttonId)] + "\n");
+            String isCharging;
+            if(isBatteryCharging[Integer.parseInt(buttonId)].equals("true")) isCharging = "Yes";
+            else isCharging = "No";
+            buffer.append("Battery Charging: "+ isCharging + "\n\n");
+
+            // creating dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(true);
+            builder.setTitle("Information about Car");
+            builder.setMessage(buffer.toString());
+            builder.show();
+
     }
 
     public void GoToMap(View view)

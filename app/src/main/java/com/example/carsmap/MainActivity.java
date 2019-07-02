@@ -75,7 +75,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         carId = getIntent().getStringExtra("8");
         distanceToUser = new String[100];
 
-        Log.e(TAG, ""+ carId);
     }
 
 

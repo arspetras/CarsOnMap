@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.service.quicksettings.Tile;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterManager;
@@ -54,6 +56,16 @@ public class Cars extends AppCompatActivity {
     public String[] distanceToUser;
     public String buttonId = "-1";
 
+    Button showMapButton;
+    FloatingActionButton sortingBtn;
+    FloatingActionButton filterBtn;
+    FloatingActionButton cancelBtn;
+    Button filterByPlateBtn;
+    Button filterByBatteryBtn;
+    FloatingActionButton fullBatteryBtn;
+    FloatingActionButton midBatteryBtn;
+    FloatingActionButton lowBatteryBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +74,16 @@ public class Cars extends AppCompatActivity {
         distanceToUser = getIntent().getStringArrayExtra("distanceToUser");
 
         GetAllFormCarsApi ();
+
+        showMapButton = findViewById(R.id.ShowMapButton);
+        sortingBtn = findViewById(R.id.sortingButton);
+        filterBtn = findViewById(R.id.FilterButton);
+        cancelBtn = findViewById(R.id.cancel);
+        filterByPlateBtn = findViewById(R.id.FilterByPlateNumber);
+        filterByBatteryBtn = findViewById(R.id.filterByBattery);
+        fullBatteryBtn = findViewById(R.id.fullBatterBtn);
+        midBatteryBtn = findViewById(R.id.midBatterBtn);
+        lowBatteryBtn = findViewById(R.id.lowBatterBtn);
 
     }
 
@@ -264,6 +286,121 @@ public class Cars extends AppCompatActivity {
             builder.setMessage(buffer.toString());
             builder.show();
 
+    }
+
+    /**
+        Button click method to sort list by distance to user
+     */
+    public void Sort(View view)
+    {
+        int[] index = new int[100];
+        double[] sortedDistance = new double[100];
+
+        if(distanceToUser == null)
+            Toast.makeText(this,"Please Check Map First",Toast.LENGTH_LONG).show();
+        else {
+            for(int x = 0; x<i;x++)
+            {
+                index[x] = x;
+                sortedDistance[x] =Double.parseDouble(distanceToUser[x]);
+            }
+
+            //sorting
+            for (int x = 1; x < i; ++x) {
+                double  key = sortedDistance[x];
+                int key2 = index[x];
+                int j = x - 1;
+
+                while (j >= 0 && sortedDistance[j] > key) {
+                    sortedDistance[j + 1] = sortedDistance[j];
+                    index[j+1] = index[j];
+                    j = j - 1;
+                }
+                sortedDistance[j + 1] = key;
+                index[j+1]= key2;
+            }
+            LinearLayout carsListLL = (LinearLayout) findViewById(R.id.CarsListLayout);
+            carsListLL.removeAllViews();
+            for(int x = 0; x<i;x++)
+            {
+                addToList(photoUrl[index[x]],title[index[x]],plateNumber[index[x]],batteryLife[index[x]],distanceToUser[index[x]]);
+            }
+
+        }
+    }
+
+    /**
+        Method for filter button to show filter options
+     */
+    public void filter(View view)
+    {
+        showMapButton.setVisibility(View.INVISIBLE);
+        sortingBtn.hide();
+        filterBtn.hide();
+        cancelBtn.show();
+        filterByPlateBtn.setVisibility(View.VISIBLE);
+        filterByBatteryBtn.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     Method to cancel filter options
+     */
+    public void cancelFilter(View view)
+    {
+        showMapButton.setVisibility(View.VISIBLE);
+        sortingBtn.show();
+        filterBtn.show();
+        cancelBtn.hide();
+        filterByPlateBtn.setVisibility(View.GONE);
+        filterByBatteryBtn.setVisibility(View.GONE);
+        fullBatteryBtn.hide();
+        midBatteryBtn.hide();
+        lowBatteryBtn.hide();
+        LinearLayout carsListLL = (LinearLayout) findViewById(R.id.CarsListLayout);
+        carsListLL.removeAllViews();
+        GetAllFormCarsApi();
+    }
+
+    /**
+     Method to filter by battery
+     */
+    public void filterBattery(View view)
+    {
+        filterByPlateBtn.setVisibility(View.GONE);
+        filterByBatteryBtn.setVisibility(View.GONE);
+        fullBatteryBtn.show();
+        midBatteryBtn.show();
+        lowBatteryBtn.show();
+    }
+
+    /**
+     Method to filter by battery:
+     full battery (75-100%)
+     min battery (30 - 74%)
+     low battery (0 - 29%)
+     */
+    public void batteryFilterButtonDetect(View v)
+    {
+        int start=0, end=0;
+        if (v == fullBatteryBtn){start = 75; end = 100;}
+        else if (v == midBatteryBtn){start = 30; end = 74;}
+        else if (v == lowBatteryBtn){start = 0; end = 29;}
+        fullMidLowBatteryFilter(start,end);
+    }
+
+    public void fullMidLowBatteryFilter (int startLimit, int endLimit)
+    {
+        LinearLayout carsListLL = (LinearLayout) findViewById(R.id.CarsListLayout);
+        carsListLL.removeAllViews();
+        for(int x = 0; x<i;x++)
+        {
+            if(Integer.parseInt(batteryLife[x]) >= startLimit && Integer.parseInt(batteryLife[x]) <= endLimit)
+            {
+                if(distanceToUser == null) addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x], "~");
+                else addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x],distanceToUser[x]);
+            }
+
+        }
     }
 
     public void GoToMap(View view)

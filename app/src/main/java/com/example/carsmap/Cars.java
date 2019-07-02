@@ -65,6 +65,8 @@ public class Cars extends AppCompatActivity {
     FloatingActionButton fullBatteryBtn;
     FloatingActionButton midBatteryBtn;
     FloatingActionButton lowBatteryBtn;
+    FloatingActionButton searchBtn;
+    TextView plateNumberInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,10 +86,13 @@ public class Cars extends AppCompatActivity {
         fullBatteryBtn = findViewById(R.id.fullBatterBtn);
         midBatteryBtn = findViewById(R.id.midBatterBtn);
         lowBatteryBtn = findViewById(R.id.lowBatterBtn);
+        searchBtn = findViewById(R.id.searchButton);
+        plateNumberInput = findViewById(R.id.PlateNumberSearchBar);
+
 
     }
 
-    public void addToList(String url, String cTitle, String cPlateNumber,String cBatteryLife, String userDistance)
+    public void addToList(String url, String cTitle, String cPlateNumber,String cBatteryLife, String userDistance, int btnIndex)
     {
         LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
                 400, 400);
@@ -123,7 +128,7 @@ public class Cars extends AppCompatActivity {
 
         final Button showOnMapButton = new Button(this);
         showOnMapButton.setText("Show On Map");
-        showOnMapButton.setId(i);
+        showOnMapButton.setId(btnIndex);
         showOnMapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,7 +166,7 @@ public class Cars extends AppCompatActivity {
 
         final Button moreInfoButton = new Button(this);
         moreInfoButton.setText("More Info");
-        moreInfoButton.setId(i);
+        moreInfoButton.setId(btnIndex);
         moreInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -248,8 +253,8 @@ public class Cars extends AppCompatActivity {
                     batteryLife[i] = post.getBatteryPercentage();
                     batteryDistance[i] = post.getBatteryEstimatedDistance();
                     isBatteryCharging[i] = post.isCharging();
-                    if(distanceToUser == null) addToList(photoUrl[i],title[i],plateNumber[i],batteryLife[i], "~");
-                    else addToList(photoUrl[i],title[i],plateNumber[i],batteryLife[i],distanceToUser[i]);
+                    if(distanceToUser == null) addToList(photoUrl[i],title[i],plateNumber[i],batteryLife[i], "~",i);
+                    else addToList(photoUrl[i],title[i],plateNumber[i],batteryLife[i],distanceToUser[i],i);
                     i++;
                 }
 
@@ -323,7 +328,7 @@ public class Cars extends AppCompatActivity {
             carsListLL.removeAllViews();
             for(int x = 0; x<i;x++)
             {
-                addToList(photoUrl[index[x]],title[index[x]],plateNumber[index[x]],batteryLife[index[x]],distanceToUser[index[x]]);
+                addToList(photoUrl[index[x]],title[index[x]],plateNumber[index[x]],batteryLife[index[x]],distanceToUser[index[x]],x);
             }
 
         }
@@ -351,14 +356,20 @@ public class Cars extends AppCompatActivity {
         sortingBtn.show();
         filterBtn.show();
         cancelBtn.hide();
-        filterByPlateBtn.setVisibility(View.GONE);
-        filterByBatteryBtn.setVisibility(View.GONE);
+        filterByPlateBtn.setVisibility(View.INVISIBLE);
+        filterByBatteryBtn.setVisibility(View.INVISIBLE);
         fullBatteryBtn.hide();
         midBatteryBtn.hide();
         lowBatteryBtn.hide();
+        plateNumberInput.setVisibility(View.INVISIBLE);
+        searchBtn.hide();
         LinearLayout carsListLL = (LinearLayout) findViewById(R.id.CarsListLayout);
         carsListLL.removeAllViews();
-        GetAllFormCarsApi();
+        for(int x = 0;x<i;x++)
+        {
+            if(distanceToUser == null) addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x], "~",x);
+            else addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x],distanceToUser[x],x);
+        }
     }
 
     /**
@@ -366,8 +377,8 @@ public class Cars extends AppCompatActivity {
      */
     public void filterBattery(View view)
     {
-        filterByPlateBtn.setVisibility(View.GONE);
-        filterByBatteryBtn.setVisibility(View.GONE);
+        filterByPlateBtn.setVisibility(View.INVISIBLE);
+        filterByBatteryBtn.setVisibility(View.INVISIBLE);
         fullBatteryBtn.show();
         midBatteryBtn.show();
         lowBatteryBtn.show();
@@ -396,12 +407,51 @@ public class Cars extends AppCompatActivity {
         {
             if(Integer.parseInt(batteryLife[x]) >= startLimit && Integer.parseInt(batteryLife[x]) <= endLimit)
             {
-                if(distanceToUser == null) addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x], "~");
-                else addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x],distanceToUser[x]);
+                if(distanceToUser == null) addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x], "~",x);
+                else addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x],distanceToUser[x],x);
             }
 
         }
     }
+
+    /**
+        Method to allow filter by plate number
+     */
+    public void filterByPlateNumber(View view)
+    {
+        filterByPlateBtn.setVisibility(View.INVISIBLE);
+        filterByBatteryBtn.setVisibility(View.INVISIBLE);
+        searchBtn.show();
+        plateNumberInput.setVisibility(View.VISIBLE);
+        plateNumberInput.setText("");
+    }
+
+    /**
+        Method to filter by plate number by taking input from textView
+     */
+    public void searchPlateNumber(View view)
+    {
+
+
+       String PN = String.valueOf(plateNumberInput.getText());
+        LinearLayout carsListLL = (LinearLayout) findViewById(R.id.CarsListLayout);
+        carsListLL.removeAllViews();
+        boolean foundIt = false;
+
+       for(int x =0;x<i;x++)
+       {
+
+           if(plateNumber[x].equals(PN) || plateNumber[x].equals(PN.toLowerCase()) || plateNumber[x].equals(PN.toUpperCase()))
+           {
+               if(distanceToUser == null) addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x], "~",x);
+               else addToList(photoUrl[x],title[x],plateNumber[x],batteryLife[x],distanceToUser[x],x);
+               foundIt = true;
+               break;
+           }
+       }
+       if(foundIt == false) Toast.makeText(this,"Car not found",Toast.LENGTH_LONG).show();
+    }
+
 
     public void GoToMap(View view)
     {

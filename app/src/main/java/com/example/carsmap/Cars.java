@@ -49,6 +49,7 @@ public class Cars extends AppCompatActivity {
     public String[] batteryLife;
     int i=0;
     public String[] distanceToUser;
+    public String buttonId = "-1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,8 +96,17 @@ public class Cars extends AppCompatActivity {
         distance.setTextColor(Color.BLACK);
         distance.setTextSize(20);
 
-        Button showOnMapButton = new Button(this);
+        final Button showOnMapButton = new Button(this);
         showOnMapButton.setText("Show On Map");
+        showOnMapButton.setId(i);
+        showOnMapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonId =String.valueOf(showOnMapButton.getId());
+                GoToMap(v);
+
+            }
+        });
 
         // get info
         TextView carTitle = new TextView(this);
@@ -224,6 +234,7 @@ public class Cars extends AppCompatActivity {
         intent.putExtra("5", title);
         intent.putExtra("6", photoUrl);
         intent.putExtra("7", length);
+        intent.putExtra("8", buttonId);
         startActivity(intent);
     }
 

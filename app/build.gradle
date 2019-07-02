@@ -35,4 +35,5 @@ dependencies {
 
     //Clustering
     implementation 'com.google.maps.android:android-maps-utils:0.5+'
+    implementation 'com.android.support:design:28.0.0'
 }

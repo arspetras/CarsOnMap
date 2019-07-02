@@ -56,6 +56,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
     public double lat;
     public double lon;
+    public String carId = "-1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +72,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         title = getIntent().getStringArrayExtra("5");
         photoUrl = getIntent().getStringArrayExtra("6");
         listLength = getIntent().getStringExtra("7");
-
+        carId = getIntent().getStringExtra("8");
         distanceToUser = new String[100];
 
+        Log.e(TAG, ""+ carId);
     }
 
 
@@ -132,7 +134,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                             lat = currentLocation.getLatitude();
                             lon = currentLocation.getLongitude();
                             LatLng ll = new LatLng(lat,lon);
-                            if(focusOnUser) moveCameraView(ll,ZOOM);
+                            if(focusOnUser && carId.equals("-1")) moveCameraView(ll,ZOOM);
+                            else{
+                                ll = new LatLng(Double.parseDouble(latitude[Integer.parseInt(carId)]),Double.parseDouble(longitude[Integer.parseInt(carId)]));
+                                moveCameraView(ll,ZOOM);
+
+                            }
                         }
                         else
                         {
